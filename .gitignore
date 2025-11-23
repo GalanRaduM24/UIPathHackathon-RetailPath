@@ -1,0 +1,25 @@
+# Environment variables (API keys, secrets)
+.env
+
+# Large data files
+kontur_population_20231101.gpkg
+*.gpkg
+
+# Python virtual environment
+venv/
+env/
+*.pyc
+__pycache__/
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+
+# Generated files (optional - uncomment if you don't want to track these)
+# bucharest_dual_map.html
+# bucharest_population_hexagons.geojson
