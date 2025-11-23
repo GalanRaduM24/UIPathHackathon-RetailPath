@@ -14,6 +14,7 @@ KONTUR_FILE = os.path.join(DATA_DIR, "kontur_population_20231101.gpkg")
 CACHED_POPULATION_FILE = os.path.join(DATA_DIR, "bucharest_population_hexagons.geojson")
 NEIGHBORHOODS_FILE = os.path.join(DATA_DIR, "neighborghoods", "bucharest_neighborhoods_final.geojson")
 STORES_FILE = os.path.join(DATA_DIR, "stores_with_coords.json")
+STORES_ENRICHED_FILE = os.path.join(DATA_DIR, "stores_enriched.json")
 
 # Bucharest Bounding Box (approximate)
 # [minx, miny, maxx, maxy]

@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from config.config import (
     CACHED_POPULATION_FILE, KONTUR_FILE, BBOX_COORDS, 
-    NEIGHBORHOODS_FILE, STORES_FILE, 
+    NEIGHBORHOODS_FILE, STORES_FILE, STORES_ENRICHED_FILE,
     API_KEY_PRIVATE, BASE_URL, LAT, LNG, RADIUS, TYPES, LIMIT
 )
 
@@ -93,6 +93,23 @@ def load_competition_data():
         return data
     except Exception as e:
         print(f"Error loading competition data: {e}")
+        return None
+
+def load_stores_enriched():
+    """
+    Loads enriched store data with traffic information from JSON file.
+    """
+    if not os.path.exists(STORES_ENRICHED_FILE):
+        print(f"Error: Stores enriched file '{STORES_ENRICHED_FILE}' not found.")
+        return None
+        
+    print(f"Loading enriched store traffic data from {STORES_ENRICHED_FILE}...")
+    try:
+        with open(STORES_ENRICHED_FILE, 'r') as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        print(f"Error loading enriched store data: {e}")
         return None
 
 def get_foot_traffic_data():

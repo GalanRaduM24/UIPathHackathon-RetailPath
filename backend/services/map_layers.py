@@ -110,6 +110,88 @@ def add_traffic_layer(m, traffic_heatmap_data):
         )
         hm.add_to(m)
 
+def add_store_traffic_layer(m, stores_enriched_data):
+    """
+    Adds the store traffic layer with color-coded markers based on current traffic.
+    """
+    if stores_enriched_data:
+        print("Adding Store Traffic layer...")
+        fg_traffic = folium.FeatureGroup(name="Store Traffic", overlay=True)
+        
+        # Map store types to icons
+        icon_mapping = {
+            "lidl_stores": "Images/lidl.png",
+            "mega_image_stores": "Images/mega_image.png",
+            "profi_stores": "Images/profi.png",
+            "la_doi_pasi_stores": "Images/la_doi_pasi.png",
+            "carrefour_stores": "Images/carrefour.png"
+        }
+        
+        store_count = 0
+        for store_type, stores in stores_enriched_data.items():
+            icon_image = icon_mapping.get(store_type)
+            
+            for store in stores:
+                lat = store.get('latitude')
+                lng = store.get('longitude')
+                name = store.get('name', 'Unknown Store')
+                address = store.get('address', 'Unknown Address')
+                popular_times = store.get('popular_times', {})
+                
+                if lat and lng:
+                    # Calculate average traffic across all days/hours
+                    avg_traffic = 0
+                    traffic_data = popular_times.get('traffic_per_hour_per_day', {}) if popular_times else {}
+                    if traffic_data:
+                        total_traffic = 0
+                        count = 0
+                        for day, hours in traffic_data.items():
+                            for hour_data in hours:
+                                total_traffic += hour_data.get('traffic_percentage', 0)
+                                count += 1
+                        avg_traffic = total_traffic / count if count > 0 else 0
+                    
+                    # Color code based on average traffic
+                    if avg_traffic >= 50:
+                        color = '#d7191c'  # Red - High traffic
+                        border_color = '#a01510'
+                    elif avg_traffic >= 30:
+                        color = '#fdae61'  # Orange - Medium traffic
+                        border_color = '#e89850'
+                    elif avg_traffic >= 15:
+                        color = '#ffffbf'  # Yellow - Low-Medium traffic
+                        border_color = '#e6e6a0'
+                    else:
+                        color = '#2c7bb6'  # Blue - Low traffic
+                        border_color = '#1e5a7f'
+                    
+                    # Create popup with traffic info
+                    popup_html = f"""
+                    <div style="font-family: Arial; min-width: 200px;">
+                        <h4 style="margin: 0 0 8px 0; color: #333;">{name}</h4>
+                        <p style="margin: 4px 0; font-size: 12px; color: #666;">{address}</p>
+                        <hr style="margin: 8px 0; border: none; border-top: 1px solid #ddd;">
+                        <p style="margin: 4px 0;"><strong>Avg. Traffic:</strong> {avg_traffic:.1f}%</p>
+                    </div>
+                    """
+                    
+                    folium.CircleMarker(
+                        location=[lat, lng],
+                        radius=8,
+                        color=border_color,
+                        fill=True,
+                        fill_color=color,
+                        fill_opacity=0.8,
+                        weight=2,
+                        popup=folium.Popup(popup_html, max_width=300),
+                        tooltip=f"{name} - Traffic: {avg_traffic:.1f}%"
+                    ).add_to(fg_traffic)
+                    
+                    store_count += 1
+        
+        fg_traffic.add_to(m)
+        print(f"Added {store_count} store traffic markers.")
+
 def add_competition_layer(m, competition_data):
     """
     Adds the competition markers layer to the map.
