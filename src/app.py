@@ -1,4 +1,4 @@
-from flask import Flask, send_file, request, jsonify
+from flask import Flask, send_file, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import sys
@@ -12,19 +12,20 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'backend', 'services'))
 
 from services.utils import process_drawn_zone
 
-app = Flask(__name__, static_folder='assets')
+# Configure Flask to serve React app
+FRONTEND_DIST = os.path.join(BASE_DIR, 'frontend', 'dist')
+FRONTEND_OLD = os.path.join(BASE_DIR, 'frontend_old', 'templates')
+
+app = Flask(__name__, 
+            static_folder=FRONTEND_DIST,
+            static_url_path='')
 CORS(app)  # Enable CORS for all routes
 
-@app.route('/')
-def home():
-    return send_file(os.path.join(BASE_DIR, 'frontend', 'templates', 'bucharest_dual_map.html'))
-
-@app.route('/assets/<path:path>')
-def send_assets(path):
-    return send_file(os.path.join('assets', path))
-
-@app.route('/analyze', methods=['POST'])
+# API Routes - MUST be defined before catch-all routes
+@app.route('/api/analyze', methods=['POST'])
+@app.route('/analyze', methods=['POST'])  # Also handle requests from embedded map
 def analyze_zone():
+    """Analyze a drawn zone and return street data"""
     try:
         data = request.json
         geometry = data.get('geometry')
@@ -52,9 +53,51 @@ def analyze_zone():
         
     except Exception as e:
         print(f"Error in analyze_zone: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/map-data', methods=['GET'])
+def get_map_data():
+    """Serve the old Bucharest map HTML for embedding"""
+    try:
+        map_path = os.path.join(FRONTEND_OLD, 'bucharest_dual_map.html')
+        if os.path.exists(map_path):
+            return send_file(map_path)
+        else:
+            return jsonify({'error': 'Map data not found'}), 404
+    except Exception as e:
+        print(f"Error serving map data: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# React App Routes - Catch-all routes MUST be last
+@app.route('/')
+def serve_react_app():
+    """Serve the React app index.html"""
+    if os.path.exists(os.path.join(FRONTEND_DIST, 'index.html')):
+        return send_from_directory(FRONTEND_DIST, 'index.html')
+    else:
+        # Fallback to old map during development
+        return send_file(os.path.join(FRONTEND_OLD, 'bucharest_dual_map.html'))
+
+@app.route('/<path:path>')
+def serve_react_routes(path):
+    """Serve React app for all non-API routes"""
+    # Check if it's a static file
+    if os.path.exists(os.path.join(FRONTEND_DIST, path)):
+        return send_from_directory(FRONTEND_DIST, path)
+    # Otherwise serve index.html for React Router
+    elif os.path.exists(os.path.join(FRONTEND_DIST, 'index.html')):
+        return send_from_directory(FRONTEND_DIST, 'index.html')
+    else:
+        return send_file(os.path.join(FRONTEND_OLD, 'bucharest_dual_map.html'))
+
 if __name__ == '__main__':
-    print("Starting Bucharest Map Server...")
-    print("Open http://127.0.0.1:5000 in your browser")
+    print("Starting RetailPath Server...")
+    print("Frontend: http://127.0.0.1:5001")
+    print("API: http://127.0.0.1:5001/api")
+    print("\nFor development:")
+    print("  1. Run this Flask server (port 5001)")
+    print("  2. Run 'npm run dev' in frontend/ (port 5173)")
+    print("  3. Open http://localhost:5173")
     app.run(debug=True, port=5001)

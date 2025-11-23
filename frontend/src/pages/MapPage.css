@@ -1,0 +1,38 @@
+.map-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.map-page-content {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    margin-top: 70px;
+    height: calc(100vh - 70px);
+    overflow: hidden;
+}
+
+.map-section {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+.chatbot-section {
+    height: 100%;
+    overflow: hidden;
+}
+
+@media (max-width: 968px) {
+    .map-page-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+        height: calc(100vh - 70px);
+    }
+
+    .chatbot-section {
+        max-height: 50vh;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
