@@ -109,46 +109,31 @@ def generate_map():
         📍 BUCHAREST PULSE
     </h4>
     
-    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
-        <label style="display: flex; align-items: center; cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.2s;" 
-               onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
-               onmouseout="this.style.background='transparent'">
-            <input type="checkbox" id="toggle-residential" style="margin-right: 8px;">
+    <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+        <div style="display: flex; align-items: center; padding: 4px;">
             <span style="color: #feb24c;">●</span>
-            <span style="color:#e0e0e0; margin-left: 6px;">Residential Density</span>
-        </label>
+            <span style="color:#e0e0e0; margin-left: 8px;">Residential Density</span>
+        </div>
         
-        <label style="display: flex; align-items: center; cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.2s;" 
-               onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
-               onmouseout="this.style.background='transparent'">
-            <input type="checkbox" id="toggle-neighborhoods" style="margin-right: 8px;">
+        <div style="display: flex; align-items: center; padding: 4px;">
             <span style="border: 2px solid #00d4ff; display:inline-block; width:12px; height:12px; border-radius: 2px;"></span>
-            <span style="color:#e0e0e0; margin-left: 6px;">Neighborhoods</span>
-        </label>
+            <span style="color:#e0e0e0; margin-left: 8px;">Neighborhoods</span>
+        </div>
         
-        <label style="display: flex; align-items: center; cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.2s;" 
-               onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
-               onmouseout="this.style.background='transparent'">
-            <input type="checkbox" id="toggle-heatmap" style="margin-right: 8px;">
+        <div style="display: flex; align-items: center; padding: 4px;">
             <span style="color: cyan;">●</span>
-            <span style="color:#e0e0e0; margin-left: 6px;">Commercial Activity</span>
-        </label>
+            <span style="color:#e0e0e0; margin-left: 8px;">Commercial Activity</span>
+        </div>
         
-        <label style="display: flex; align-items: center; cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.2s;" 
-               onmouseover="this.style.background='rgba(255,255,255,0.05)'" 
-               onmouseout="this.style.background='transparent'">
-            <input type="checkbox" id="toggle-competition" style="margin-right: 8px;">
+        <div style="display: flex; align-items: center; padding: 4px;">
             <span style="color: #ff4444;">●</span>
-            <span style="color:#e0e0e0; margin-left: 6px;">Competition</span>
-        </label>
+            <span style="color:#e0e0e0; margin-left: 8px;">Competition</span>
+        </div>
         
-        <label style="display: flex; align-items: center; cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.2s; background: rgba(0, 212, 255, 0.08);" 
-               onmouseover="this.style.background='rgba(0, 212, 255, 0.15)'" 
-               onmouseout="this.style.background='rgba(0, 212, 255, 0.08)'">
-            <input type="checkbox" id="toggle-store-traffic" style="margin-right: 8px;">
+        <div style="display: flex; align-items: center; padding: 4px; background: rgba(0, 212, 255, 0.08); border-radius: 6px;">
             <span style="color: #00d4ff;">●</span>
-            <span style="color:#00d4ff; margin-left: 6px; font-weight: 500;">Store Traffic</span>
-        </label>
+            <span style="color:#00d4ff; margin-left: 8px; font-weight: 500;">Store Traffic</span>
+        </div>
     </div>
     
     <hr style="margin: 12px 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);">
