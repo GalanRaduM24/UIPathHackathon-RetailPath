@@ -191,21 +191,22 @@
             position: fixed;
             top: 280px;
             right: 10px;
-            width: 350px;
+            width: 380px;
             max-height: calc(100vh - 300px);
-            background: rgba(30, 30, 30, 0.95);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(145deg, rgba(25, 25, 35, 0.98), rgba(35, 35, 50, 0.98));
+            border-radius: 16px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 212, 255, 0.1);
             z-index: 998;
             display: none;
             overflow: hidden;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 212, 255, 0.15);
         }
         
         #street-panel-header {
-            padding: 15px 20px;
-            background: rgba(50, 50, 50, 0.8);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 18px 24px;
+            background: linear-gradient(135deg, rgba(0, 150, 200, 0.15), rgba(0, 212, 255, 0.1));
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -214,63 +215,82 @@
         #street-panel-header h4 {
             margin: 0;
             color: #fff;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.3px;
         }
         
         #street-panel-buttons {
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
         
         .panel-button {
-            background: rgba(0, 212, 255, 0.2);
-            border: 1px solid rgba(0, 212, 255, 0.5);
+            background: linear-gradient(135deg, rgba(0, 180, 220, 0.2), rgba(0, 212, 255, 0.15));
+            border: 1px solid rgba(0, 212, 255, 0.4);
             color: #00d4ff;
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 13px;
-            transition: all 0.3s;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 212, 255, 0.1);
         }
         
         .panel-button:hover {
-            background: rgba(0, 212, 255, 0.3);
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 180, 220, 0.25));
             border-color: #00d4ff;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+            transform: translateY(-1px);
         }
         
         #street-panel-content {
-            padding: 15px;
+            padding: 20px;
             max-height: calc(80vh - 60px);
             overflow-y: auto;
             color: #fff;
+            background: transparent;
         }
         
         .placeholder {
-            color: #777;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 40px 20px;
+            padding: 60px 24px;
+            min-height: 200px;
         }
         
         .placeholder-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.6;
         }
         
         .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
             color: #00d4ff;
-            padding: 40px 20px;
+            padding: 60px 24px;
+            min-height: 200px;
         }
         
         .spinner {
-            border: 3px solid rgba(0, 212, 255, 0.1);
-            border-top: 3px solid #00d4ff;
+            border: 4px solid rgba(0, 212, 255, 0.15);
+            border-top: 4px solid #00d4ff;
+            border-right: 4px solid rgba(0, 180, 220, 0.5);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
+            width: 56px;
+            height: 56px;
+            animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), inset 0 0 10px rgba(0, 212, 255, 0.2);
         }
         
         @keyframes spin {
@@ -278,37 +298,61 @@
             100% { transform: rotate(360deg); }
         }
         
+        .loading-text {
+            font-size: 15px;
+            font-weight: 500;
+            color: #00d4ff;
+            letter-spacing: 0.5px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
         .street-results {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
         
         .street-item {
-            padding: 10px 12px;
-            background: rgba(50, 50, 50, 0.5);
-            border-left: 3px solid #00d4ff;
-            border-radius: 6px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(50, 50, 60, 0.4), rgba(40, 40, 55, 0.5));
+            border-left: 4px solid #00d4ff;
+            border-radius: 8px;
             font-size: 14px;
-            line-height: 1.4;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .street-item:hover {
+            background: linear-gradient(135deg, rgba(60, 60, 70, 0.5), rgba(50, 50, 65, 0.6));
+            border-left-color: #00e5ff;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+            transform: translateX(4px);
         }
         
         #street-panel-content::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
         
         #street-panel-content::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin: 4px 0;
         }
         
         #street-panel-content::-webkit-scrollbar-thumb {
-            background: rgba(0, 212, 255, 0.5);
-            border-radius: 4px;
+            background: linear-gradient(180deg, rgba(0, 212, 255, 0.6), rgba(0, 180, 220, 0.5));
+            border-radius: 5px;
+            border: 2px solid rgba(25, 25, 35, 0.98);
         }
         
         #street-panel-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 212, 255, 0.7);
+            background: linear-gradient(180deg, rgba(0, 212, 255, 0.8), rgba(0, 180, 220, 0.7));
         }
     </style>
 </head>
@@ -24781,7 +24825,7 @@
             // Show loading state
             const panel = document.getElementById('street-panel');
             const content = document.getElementById('street-panel-content');
-            content.innerHTML = '<div class="placeholder"><div class="spinner"></div><div>Analyzing area...</div></div>';
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">Analyzing area...</div></div>';
             panel.style.display = 'block';
             
             // Send to backend for analysis
