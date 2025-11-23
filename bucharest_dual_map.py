@@ -20,6 +20,7 @@ API_KEY_PRIVATE = os.getenv("BESTTIME_API_KEY")
 KONTUR_FILE = "kontur_population_20231101.gpkg"
 CACHED_POPULATION_FILE = "bucharest_population_hexagons.geojson"
 NEIGHBORHOODS_FILE = "neighborghoods/bucharest_neighborhoods_final.geojson"
+STORES_FILE = "stores_with_coords.json"
 
 # Bucharest Bounding Box (approximate)
 # [minx, miny, maxx, maxy]
@@ -226,6 +227,23 @@ def load_neighborhoods():
         print(f"Error loading neighborhoods: {e}")
         return None
 
+def load_competition_data():
+    """
+    Loads competition store data from JSON file.
+    """
+    if not os.path.exists(STORES_FILE):
+        print(f"Error: Stores file '{STORES_FILE}' not found.")
+        return None
+        
+    print(f"Loading competition data from {STORES_FILE}...")
+    try:
+        with open(STORES_FILE, 'r') as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        print(f"Error loading competition data: {e}")
+        return None
+
 def get_foot_traffic_data():
     """
     Fetches foot traffic forecast from BestTime API.
@@ -323,7 +341,7 @@ def process_traffic_for_heatmap(venues):
     print(f"Processed {count} venues for heatmap.")
     return heatmap_data
 
-def create_dual_map(population_gdf, traffic_heatmap_data, neighborhoods_gdf):
+def create_dual_map(population_gdf, traffic_heatmap_data, neighborhoods_gdf, competition_data):
     """
     Creates the combined map with all layers.
     """
@@ -433,6 +451,64 @@ def create_dual_map(population_gdf, traffic_heatmap_data, neighborhoods_gdf):
         )
         hm.add_to(m)
 
+    # --- Layer 4: Competition (Markers) ---
+    if competition_data:
+        print("Adding Competition layer...")
+        fg_competition = folium.FeatureGroup(name="Competition", overlay=True)
+        
+        # Map store types to image files
+        # Keys match the JSON structure, Values match the filenames in Images/ folder
+        icon_mapping = {
+            "lidl_stores": "Images/lidl.png",
+            "mega_image_stores": "Images/mega_image.png",
+            "profi_stores": "Images/profi.png",
+            "la_doi_pasi_stores": "Images/la_doi_pasi.png",
+            "carrefour_stores": "Images/carrefour.png"
+        }
+        
+        store_count = 0
+        for store_type, stores in competition_data.items():
+            icon_image = icon_mapping.get(store_type)
+            
+            for store in stores:
+                lat = store.get('latitude')
+                lng = store.get('longitude')
+                name = store.get('name', 'Unknown Store')
+                address = store.get('address', 'Unknown Address')
+                
+                if lat and lng:
+                    if icon_image and os.path.exists(icon_image):
+                        # Use Custom Icon
+                        icon = folium.CustomIcon(
+                            icon_image,
+                            icon_size=(24, 24), # Adjust size as needed
+                            popup_anchor=(0, -12)
+                        )
+                        folium.Marker(
+                            location=[lat, lng],
+                            icon=icon,
+                            popup=folium.Popup(f"<b>{name}</b><br>{address}", max_width=300),
+                            tooltip=f"{name}"
+                        ).add_to(fg_competition)
+                    else:
+                        # Fallback to CircleMarker if image missing
+                        folium.CircleMarker(
+                            location=[lat, lng],
+                            radius=6,
+                            color='#ff0000',
+                            fill=True,
+                            fill_color='#ff4444',
+                            fill_opacity=0.7,
+                            weight=1,
+                            popup=folium.Popup(f"<b>{name}</b><br>{address}", max_width=300),
+                            tooltip=f"{name}"
+                        ).add_to(fg_competition)
+                    
+                    store_count += 1
+        
+        fg_competition.add_to(m)
+        print(f"Added {store_count} competition markers.")
+
     # --- Custom UI Title Card ---
     title_html = '''
      <div style="position: fixed; 
@@ -456,6 +532,9 @@ def create_dual_map(population_gdf, traffic_heatmap_data, neighborhoods_gdf):
      </div>
      <div style="margin-bottom: 15px;">
         <span style="color: cyan;">●</span> <span style="color:#ccc; font-size:12px;">Commercial Activity (Animated)</span>
+     </div>
+     <div style="margin-bottom: 15px;">
+        <span style="color: #ff4444;">●</span> <span style="color:#ccc; font-size:12px;">Competition (Stores)</span>
      </div>
      
      <p style="margin:0; font-size: 10px; color: #777; text-transform: uppercase;">
@@ -1003,12 +1082,18 @@ def main():
     if venues:
         traffic_data = process_traffic_for_heatmap(venues)
     
-    # 4. Create Map
-    if pop_gdf is None and not traffic_data and neighborhoods_gdf is None:
+    # 4. Load Competition
+    competition_data = load_competition_data()
+    if competition_data:
+        total_stores = sum(len(stores) for stores in competition_data.values())
+        print(f"Loaded {total_stores} competition stores.")
+
+    # 5. Create Map
+    if pop_gdf is None and not traffic_data and neighborhoods_gdf is None and not competition_data:
         print("Error: No data available for any layer.")
         return
         
-    create_dual_map(pop_gdf, traffic_data, neighborhoods_gdf)
+    create_dual_map(pop_gdf, traffic_data, neighborhoods_gdf, competition_data)
 
 if __name__ == "__main__":
     main()
