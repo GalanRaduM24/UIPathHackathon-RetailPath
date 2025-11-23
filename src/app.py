@@ -1,14 +1,23 @@
 from flask import Flask, send_file, request, jsonify
 from flask_cors import CORS
 import os
-from utils import process_drawn_zone
+import sys
+
+# Get the base directory (parent of src/)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Add backend to path
+sys.path.insert(0, os.path.join(BASE_DIR, 'backend'))
+sys.path.insert(0, os.path.join(BASE_DIR, 'backend', 'services'))
+
+from services.utils import process_drawn_zone
 
 app = Flask(__name__, static_folder='assets')
 CORS(app)  # Enable CORS for all routes
 
 @app.route('/')
 def home():
-    return send_file('bucharest_dual_map.html')
+    return send_file(os.path.join(BASE_DIR, 'frontend', 'templates', 'bucharest_dual_map.html'))
 
 @app.route('/assets/<path:path>')
 def send_assets(path):

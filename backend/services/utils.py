@@ -118,7 +118,8 @@ def process_drawn_zone(polygon_coords):
         
         # Format results
         results = []
-        for street, numbers in sorted(street_data.items()):
+        # Sort by converting all keys to strings to avoid type comparison errors
+        for street, numbers in sorted(street_data.items(), key=lambda x: str(x[0])):
             if numbers:
                 range_str = format_ranges(numbers)
                 results.append(f"{street} ({range_str})")

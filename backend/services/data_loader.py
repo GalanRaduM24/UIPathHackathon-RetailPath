@@ -3,7 +3,11 @@ import json
 import requests
 import geopandas as gpd
 from shapely.geometry import box
-from config import (
+import sys
+
+# Add config to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from config.config import (
     CACHED_POPULATION_FILE, KONTUR_FILE, BBOX_COORDS, 
     NEIGHBORHOODS_FILE, STORES_FILE, 
     API_KEY_PRIVATE, BASE_URL, LAT, LNG, RADIUS, TYPES, LIMIT

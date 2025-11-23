@@ -20,7 +20,6 @@
 
     <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <link rel="stylesheet" href="assets/custom_style.css">
     <style>
         #map_13f0f97ef207c2f950c69fbea41172bc {
             position: relative;
@@ -186,12 +185,198 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.css" />
+    
+    <style>
+        #street-panel {
+            position: fixed;
+            top: 280px;
+            right: 10px;
+            width: 350px;
+            max-height: calc(100vh - 300px);
+            background: rgba(30, 30, 30, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            display: none;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        #street-panel-header {
+            padding: 15px 20px;
+            background: rgba(50, 50, 50, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #street-panel-header h4 {
+            margin: 0;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        #street-panel-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .panel-button {
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            color: #00d4ff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .panel-button:hover {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: #00d4ff;
+        }
+        
+        #street-panel-content {
+            padding: 15px;
+            max-height: calc(80vh - 60px);
+            overflow-y: auto;
+            color: #fff;
+        }
+        
+        .placeholder {
+            color: #777;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .placeholder-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #00d4ff;
+            padding: 40px 20px;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(0, 212, 255, 0.1);
+            border-top: 3px solid #00d4ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .street-results {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .street-item {
+            padding: 10px 12px;
+            background: rgba(50, 50, 50, 0.5);
+            border-left: 3px solid #00d4ff;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        #street-panel-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #street-panel-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        
+        #street-panel-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.5);
+            border-radius: 4px;
+        }
+        
+        #street-panel-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.7);
+        }
+    </style>
 </head>
 
 <body>
 
-    <link href="assets/style.css" rel="stylesheet">
-    <script src="assets/script.js"></script>
+    <style>
+        .map-title-card {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 999;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            min-width: 240px;
+            max-width: 280px;
+        }
+        
+        .map-title-header {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #00d4ff;
+            border-bottom: 3px solid #00d4ff;
+            padding-bottom: 10px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        .legend-item,
+        .legend-item-last {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            transition: transform 0.2s;
+            gap: 8px;
+        }
+        
+        .legend-item:hover,
+        .legend-item-last:hover {
+            transform: translateX(3px);
+        }
+        
+        .legend-item span:first-child,
+        .legend-item-last span:first-child {
+            font-size: 16px;
+            min-width: 16px;
+        }
+        
+        .legend-text {
+            flex: 1;
+        }
+        
+        .legend-footer {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
     <div class="map-title-card">
         <h4 class="map-title-header">BUCHAREST PULSE</h4>
 
@@ -234,27 +419,12 @@
 
 
     <style>
-        #export {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            z-index: 999;
-            background: white;
-            color: black;
-            padding: 6px;
-            border-radius: 4px;
-            font-family: 'Helvetica Neue';
-            cursor: pointer;
-            font-size: 12px;
-            text-decoration: none;
-            top: 90px;
-        }
+
     </style>
-    <a href='#' id='export'>Export</a>
+
 
 
 </body>
-<script src="assets/map_init.js"></script>
 <script>
 
 
@@ -1000,7 +1170,7 @@
     geo_json_e3ce05e8ad29c008299de0bf6748e24d.addTo(feature_group_8f82b27196957426fd758d67a8bb7df9);
 
 
-    feature_group_8f82b27196957426fd758d67a8bb7df9.addTo(map_13f0f97ef207c2f950c69fbea41172bc);
+    // feature_group_8f82b27196957426fd758d67a8bb7df9.addTo(map_13f0f97ef207c2f950c69fbea41172bc);
 
 
     var feature_group_97169e05d87d636567a08d912b623e17 = L.featureGroup(
@@ -1117,7 +1287,7 @@
     geo_json_07d9a867e36f156df924b2494d7be02d.addTo(feature_group_97169e05d87d636567a08d912b623e17);
 
 
-    feature_group_97169e05d87d636567a08d912b623e17.addTo(map_13f0f97ef207c2f950c69fbea41172bc);
+    // feature_group_97169e05d87d636567a08d912b623e17.addTo(map_13f0f97ef207c2f950c69fbea41172bc);
 
 
 
@@ -1165,7 +1335,7 @@
 
 
 
-    heat_map_1d6ecbb75334acbdbfe41e737536719f.addTo(map_13f0f97ef207c2f950c69fbea41172bc);
+    // heat_map_1d6ecbb75334acbdbfe41e737536719f.addTo(map_13f0f97ef207c2f950c69fbea41172bc);
 
 
     var feature_group_4eb4ad0ab55c636507db3423a08d61e6 = L.featureGroup(
@@ -24582,7 +24752,7 @@
     marker_d939adb209f3e78c94916e6659e9cfe0.setIcon(icon_f045d20c2055a765c5f559f864d14517);
 
 
-    feature_group_4eb4ad0ab55c636507db3423a08d61e6.addTo(map_13f0f97ef207c2f950c69fbea41172bc);
+    // feature_group_4eb4ad0ab55c636507db3423a08d61e6.addTo(map_13f0f97ef207c2f950c69fbea41172bc);
 
 
     var options = {
@@ -24603,10 +24773,40 @@
     map_13f0f97ef207c2f950c69fbea41172bc.on(L.Draw.Event.CREATED, function (e) {
         var layer = e.layer,
             type = e.layerType;
-        var coords = JSON.stringify(layer.toGeoJSON());
+        var geojson = layer.toGeoJSON();
+        
         layer.on('click', function () {
-            alert(coords);
-            console.log(coords);
+            console.log('Sending analysis request:', geojson);
+            
+            // Show loading state
+            const panel = document.getElementById('street-panel');
+            const content = document.getElementById('street-panel-content');
+            content.innerHTML = '<div class="placeholder"><div class="spinner"></div><div>Analyzing area...</div></div>';
+            panel.style.display = 'block';
+            
+            // Send to backend for analysis
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(geojson)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Received data:', data);
+                if (data.error) {
+                    content.innerHTML = '<div class="placeholder"><div class="placeholder-icon">❌</div><div>Error: ' + data.error + '</div></div>';
+                } else {
+                    // Display results in panel
+                    console.log('Calling showStreetPanel with:', data.streets);
+                    showStreetPanel(data.streets);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                content.innerHTML = '<div class="placeholder"><div class="placeholder-icon">❌</div><div>Failed to analyze area: ' + error.message + '</div></div>';
+            });
         });
         drawnItems_draw_control_077a4dee775b78ca31fa02763e038796.addLayer(layer);
     });
@@ -24615,17 +24815,46 @@
     });
 
 
-    document.getElementById('export').onclick = function (e) {
-        var data = drawnItems_draw_control_077a4dee775b78ca31fa02763e038796.toGeoJSON();
-        var convertedData = 'text/json;charset=utf-8,'
-            + encodeURIComponent(JSON.stringify(data));
-        document.getElementById('export').setAttribute(
-            'href', 'data:' + convertedData
-        );
-        document.getElementById('export').setAttribute(
-            'download', "drawn_zone.geojson"
-        );
+
+
+    // Street Panel Functions
+    function showStreetPanel(streets) {
+        const panel = document.getElementById('street-panel');
+        const content = document.getElementById('street-panel-content');
+        
+        // Clear placeholder and show results
+        content.innerHTML = '<div class="street-results">' + 
+            streets.map(street => '<div class="street-item">' + street + '</div>').join('') + 
+            '</div>';
+        
+        panel.style.display = 'block';
     }
+
+    function hideStreetPanel() {
+        document.getElementById('street-panel').style.display = 'none';
+    }
+
+    // Close button handler
+    document.getElementById('close-btn').onclick = function() {
+        hideStreetPanel();
+    };
+
+    // Copy button handler
+    document.getElementById('copy-btn').onclick = function() {
+        const content = document.getElementById('street-panel-content');
+        const text = content.innerText;
+        
+        navigator.clipboard.writeText(text).then(function() {
+            const btn = document.getElementById('copy-btn');
+            const originalText = btn.innerText;
+            btn.innerText = 'Copied!';
+            setTimeout(function() {
+                btn.innerText = originalText;
+            }, 2000);
+        }).catch(function(err) {
+            alert('Failed to copy: ' + err);
+        });
+    };
 
 
 
