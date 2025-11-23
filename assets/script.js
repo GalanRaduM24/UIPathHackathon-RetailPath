@@ -207,16 +207,17 @@ function setupDrawListeners(leafletMap) {
 
         // Add the layer to the map
         leafletMap.addLayer(layer);
-        // Remove any default popup that shows GeoJSON
+        // Ensure no default popup appears (remove any bound popup and close if open)
         if (layer.unbindPopup) { layer.unbindPopup(); }
+        if (layer.closePopup) { layer.closePopup(); }
 
-        // Add click handler to show "Extract Addresses" button
+        // Add click handler to show "Extract Addresses" button only
+        layer.off('click'); // Remove any existing click listeners
         layer.on('click', function () {
             showExtractButton(layer, leafletMap);
         });
 
-        // REMOVED: Auto-show button hint
-        // showPanelMessage('📌 Click the drawn shape to extract addresses');
+        // No automatic hint panel shown
     });
 
     // When a shape is edited
@@ -233,9 +234,21 @@ function setupDrawListeners(leafletMap) {
 
     // When a shape is deleted
     leafletMap.on('draw:deleted', function (e) {
-        currentDrawnLayer = null;
-        // Hide the Street Analysis panel when all shapes are deleted
-        hidePanel();
+        // After deletion, check if any drawn layers remain on the map
+        const remainingLayers = [];
+        leafletMap.eachLayer(function (layer) {
+            // Assuming drawn layers have a property _latlngs or are instances of L.Path
+            if (layer instanceof L.Path && !(layer instanceof L.TileLayer)) {
+                remainingLayers.push(layer);
+            }
+        });
+        if (remainingLayers.length === 0) {
+            currentDrawnLayer = null;
+            hidePanel(); // No shapes left, hide panel
+        } else {
+            // Keep the panel state unchanged; optionally update currentDrawnLayer to the last remaining
+            currentDrawnLayer = remainingLayers[remainingLayers.length - 1];
+        }
     });
 
     // Function to show extract button in a popup
