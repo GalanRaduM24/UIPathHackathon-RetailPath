@@ -1,217 +1,321 @@
-# RetailPath - Bucharest Interactive Map Platform
+# RetailPath — Bucharest Retail Location Intelligence
 
-An integrated platform combining a modern React frontend with a powerful Flask backend for analyzing retail locations in Bucharest using interactive maps, population data, and real-time commercial activity patterns.
+> Find the best place to open a store in Bucharest by combining **population density**, **foot traffic**, **competitor locations** and **street-level analysis** on one interactive map.
 
-## Features
+RetailPath is a hackathon project (UiPath Hackathon) that layers several public and commercial data sources over a map of Bucharest. A React web app hosts the map; a Flask backend serves the map and runs on-demand street analysis for any area you draw.
 
-### 🎨 Modern React Frontend (RetailPath)
-- **Landing Page**: Beautiful hero section with features and how-it-works
-- **Interactive Map Page**: Embedded Bucharest map with layer controls
-- **Chatbot Sidebar**: Strategy testing and analysis
-- **Responsive Design**: Works on desktop and mobile
+---
 
-### 🗺️ Interactive Map Layers
-1. **Residential Density** - Population data from Kontur Population Dataset
-2. **Neighborhoods** - 60 Bucharest neighborhood boundaries
-3. **Commercial Activity** - Real-time foot traffic from BestTime API
-4. **Zone Analysis** - Draw zones and analyze street networks with OSMnx
+## Table of contents
 
-### 🔧 Backend Services
-- **Flask API**: RESTful endpoints for map data and zone analysis
-- **OSMnx Integration**: Street network analysis for drawn zones
-- **CORS Enabled**: Seamless frontend-backend communication
+- [What it does](#what-it-does)
+- [How it works](#how-it-works)
+- [Tech stack](#tech-stack)
+- [Quick start](#quick-start)
+- [Running the app](#running-the-app)
+- [Regenerating the map](#regenerating-the-map)
+- [API reference](#api-reference)
+- [Project structure](#project-structure)
+- [Data sources](#data-sources)
+- [Configuration & secrets](#configuration--secrets)
+- [Troubleshooting](#troubleshooting)
+- [Project status](#project-status)
+- [Authors](#authors)
 
-## Project Structure
+---
+
+## What it does
+
+| Map layer | What you see | Source |
+|---|---|---|
+| **Residential density** | Hexagon grid coloured by population | Kontur Population dataset |
+| **Neighborhoods** | Boundaries of ~60 Bucharest neighborhoods | Custom GeoJSON |
+| **Commercial activity** | Foot-traffic heatmap over time (bars, restaurants, cafés, shops, parks) | BestTime API |
+| **Competition** | Locations of Lidl, Mega Image, Profi, Carrefour and La Doi Pași stores | `data/stores_with_coords.json` |
+| **Store traffic** | Hour-by-hour busyness for each competitor store | `data/stores_enriched.json` |
+| **Zone analysis** | Draw a polygon → get every street inside it with its house-number ranges | OpenStreetMap via OSMnx |
+
+The web app also includes a landing page and a chatbot sidebar for strategy questions (the chatbot is currently a UI prototype — see [Project status](#project-status)).
+
+---
+
+## How it works
 
 ```
-Uipath-real-time-analysis-fixes/
-├── frontend/                    # React + Vite application
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── landing/        # Landing page components
-│   │   │   ├── map/            # Map page components
-│   │   │   └── shared/         # Shared components
-│   │   ├── pages/
-│   │   │   ├── LandingPage.jsx
-│   │   │   └── MapPage.jsx
-│   │   ├── App.jsx
-│   │   └── index.css
-│   ├── package.json
-│   └── vite.config.js
-├── frontend_old/               # Backup of original Folium map
-│   └── templates/
-│       └── bucharest_dual_map.html
-├── backend/                    # Flask backend services
-│   ├── services/
-│   │   └── utils.py           # Zone analysis with OSMnx
-│   └── config/
-├── src/
-│   └── app.py                 # Flask application
-├── data/                      # Map data and GeoJSON files
-└── README.md
+                   ┌──────────────────────────────┐
+                   │   React app (Vite, port 5173) │
+                   │   /       → Landing page      │
+                   │   /map    → Map + chatbot     │
+                   └──────────────┬───────────────┘
+                                  │  /api/*  (proxied in dev)
+                                  ▼
+                   ┌──────────────────────────────┐
+                   │   Flask backend (port 5001)   │
+                   │  GET  /api/map-data           │──► pre-generated Folium map (HTML)
+                   │  POST /api/analyze            │──► OSMnx → OpenStreetMap streets
+                   └──────────────────────────────┘
+                                  ▲
+                                  │ built offline by generate_map.py
+       ┌──────────────┬───────────┴────┬──────────────────┐
+   Kontur pop.   Neighborhoods    BestTime API      Store JSON files
 ```
 
-## Setup
+1. **`generate_map.py`** loads all datasets, calls the BestTime API, and builds one interactive Folium/Leaflet map saved as `frontend_old/templates/bucharest_dual_map.html`.
+2. **Flask (`src/app.py`)** serves that map to the React app and handles zone analysis requests.
+3. **React (`frontend/`)** embeds the map in an iframe. When you draw a zone, the map posts the polygon to `/analyze`, and the backend returns the streets found inside it.
+
+---
+
+## Tech stack
+
+**Frontend:** React 19 · Vite 7 · React Router 7 · Framer Motion · Lucide icons
+**Backend:** Python · Flask · Flask-CORS · python-dotenv
+**Geospatial:** GeoPandas · Shapely · OSMnx · Folium / Leaflet · Branca
+
+---
+
+## Quick start
 
 ### Prerequisites
 
-- Python 3.8+
-- Node.js 18+ and npm
-- pip package manager
+- **Python 3.10+** (tested on 3.11)
+- **Node.js 18+** and npm
+- A **BestTime API key** — only needed if you want to regenerate the map ([get one here](https://besttime.app))
 
-### Installation
+> **Windows tip:** GeoPandas/OSMnx install most reliably with conda (`conda install -c conda-forge geopandas osmnx`). With plain pip, use a recent Python and pip.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Denis172003/Uipath.git
-   cd Uipath-real-time-analysis-fixes
-   ```
+### 1. Clone
 
-2. **Install Python dependencies**
-   ```bash
-   pip install flask flask-cors geopandas osmnx requests python-dotenv branca shapely folium
-   ```
+```bash
+git clone https://github.com/Denis172003/Uipath.git
+cd Uipath
+git checkout real-time-analysis-fixes
+```
 
-3. **Install Frontend dependencies**
-   ```bash
-   cd frontend
-   npm install
-   cd ..
-   ```
+### 2. Install backend dependencies
 
-4. **Configure API Key**
-   
-   Create a `.env` file in the project root:
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` and add your BestTime API key:
-   ```
-   BESTTIME_API_KEY=your_api_key_here
-   ```
-   
-   Get your free API key at: https://besttime.app
+```bash
+python -m venv venv
+# macOS/Linux:
+source venv/bin/activate
+# Windows (PowerShell):
+venv\Scripts\Activate.ps1
 
-## Development Workflow
+pip install -r requirements.txt
+```
 
-### Option 1: Development Mode (Recommended)
+### 3. Install frontend dependencies
 
-Run both servers for hot-reloading during development:
+```bash
+cd frontend
+npm install
+cd ..
+```
 
-1. **Start Flask Backend** (Terminal 1)
-   ```bash
-   python src/app.py
-   ```
-   Backend will run on http://localhost:5001
+### 4. Set up your environment file
 
-2. **Start Vite Dev Server** (Terminal 2)
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-   Frontend will run on http://localhost:5173
+```bash
+cp .env.example .env
+```
 
-3. **Open your browser**
-   ```
-   http://localhost:5173
-   ```
+Then open `.env` and add your key:
 
-The Vite dev server will proxy API requests to Flask automatically.
+```
+BESTTIME_API_KEY=your_api_key_here
+```
 
-### Option 2: Production Mode
+> `.env` is git-ignored. **Never commit your real key.**
 
-Build and serve the production version:
+---
 
-1. **Build React App**
-   ```bash
-   cd frontend
-   npm run build
-   cd ..
-   ```
+## Running the app
 
-2. **Start Flask Server**
-   ```bash
-   python src/app.py
-   ```
+### Development mode (recommended)
 
-3. **Open your browser**
-   ```
-   http://localhost:5001
-   ```
+Two terminals, with hot reload on the frontend:
 
-Flask will serve the built React app from `frontend/dist/`.
+```bash
+# Terminal 1 — backend
+python src/app.py            # → http://localhost:5001
 
-## API Endpoints
+# Terminal 2 — frontend
+cd frontend
+npm run dev                  # → http://localhost:5173
+```
 
-### GET /api/map-data
-Returns the Bucharest interactive map HTML (Folium-generated).
+Open **http://localhost:5173**. Vite forwards `/api` and `/analyze` calls to Flask.
 
-**Response**: HTML file with embedded Leaflet map
+### Production mode
 
-### POST /api/analyze
-Analyzes a drawn zone and returns street network data.
+Build the frontend once, then let Flask serve everything:
 
-**Request Body**:
+```bash
+cd frontend && npm run build && cd ..
+python src/app.py
+```
+
+Open **http://localhost:5001**.
+
+### Using the map
+
+1. Click **Get Started** on the landing page (or go to `/map`).
+2. Turn layers on and off with the layer control in the top-left of the map.
+3. Use the **draw tool** to outline an area. The **Street Analysis** panel lists every street inside it with house-number ranges (e.g. `Strada Lipscani: 1-15, 20-34`). Use **Copy** to copy the results.
+
+> Zone analysis downloads live data from OpenStreetMap, so it takes 10–30 seconds per zone. Results are cached locally in `cache/`, so repeat requests are faster.
+
+---
+
+## Regenerating the map
+
+The repo ships with a ready-made map, so **you don't need this to run the app.** Regenerate it when the data or layers change:
+
+```bash
+python generate_map.py
+```
+
+This writes `frontend_old/templates/bucharest_dual_map.html`. It needs:
+
+- `BESTTIME_API_KEY` in `.env` (for the foot-traffic layer)
+- `data/bucharest_population_hexagons.geojson` (included). If this file is missing, the script rebuilds it from the Kontur dataset, which you must download yourself (see [Data sources](#data-sources)).
+
+To test the street-analysis logic without the UI:
+
+```bash
+python test_zone_selector.py
+```
+
+---
+
+## API reference
+
+### `GET /api/map-data`
+
+Returns the generated interactive map as an HTML page.
+
+| Status | Meaning |
+|---|---|
+| `200` | Map HTML |
+| `404` | Map file not found — run `python generate_map.py` |
+
+### `POST /api/analyze`
+
+Lists the streets and house-number ranges inside a polygon. (`POST /analyze` works too and is used by the embedded map.)
+
+**Request**
+
 ```json
 {
   "geometry": {
     "type": "Polygon",
-    "coordinates": [[[lng, lat], [lng, lat], ...]]
+    "coordinates": [[[26.0970, 44.4320], [26.0990, 44.4320], [26.0990, 44.4310], [26.0970, 44.4310], [26.0970, 44.4320]]]
   }
 }
 ```
 
-**Response**:
-```json
-{
-  "streets": {
-    "nodes": [...],
-    "edges": [...]
-  }
-}
+Coordinates use GeoJSON order: `[longitude, latitude]`.
+
+**Example**
+
+```bash
+curl -X POST http://localhost:5001/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"geometry":{"type":"Polygon","coordinates":[[[26.097,44.432],[26.099,44.432],[26.099,44.431],[26.097,44.431],[26.097,44.432]]]}}'
 ```
 
-## Usage
+**Errors:** `400` if `geometry` is missing, `500` if the analysis fails (details in the server log).
 
-1. **Landing Page**: Navigate to the home page to see RetailPath branding and features
-2. **Map Page**: Click "Get Started" or navigate to `/map`
-3. **View Map**: The Bucharest interactive map loads automatically
-4. **Toggle Layers**: Use layer controls to show/hide different data layers
-5. **Analyze Zones**: Draw zones on the map to analyze street networks (coming soon)
-6. **Chatbot**: Use the chatbot sidebar for strategy testing
+---
 
-## Technologies
+## Project structure
 
-### Frontend
-- **React 19** - UI library
-- **Vite** - Build tool and dev server
-- **React Router** - Client-side routing
-- **Framer Motion** - Animations
-- **Lucide React** - Icons
+```
+.
+├── src/
+│   └── app.py                    # Flask entry point: API routes + serves React build
+├── backend/
+│   ├── config/config.py          # Paths, map center, BestTime settings (reads .env)
+│   └── services/
+│       ├── data_loader.py        # Loads population, neighborhoods, stores; calls BestTime
+│       ├── map_layers.py         # Builds each Folium map layer
+│       └── utils.py              # Zone analysis: OSMnx streets + house-number ranges
+├── frontend/                     # React + Vite app
+│   ├── src/pages/                # LandingPage, MapPage
+│   ├── src/components/           # landing/, map/, shared/
+│   └── vite.config.js            # Dev server + proxy to Flask
+├── frontend_old/templates/
+│   └── bucharest_dual_map.html   # Generated map (served by /api/map-data)
+├── data/                         # GeoJSON + store datasets
+├── Images/                       # Store logos used on the map
+├── generate_map.py               # Builds the map HTML from all data sources
+├── test_zone_selector.py         # Manual test for zone analysis
+├── requirements.txt              # Python dependencies
+└── .env.example                  # Template for your local .env
+```
 
-### Backend
-- **Flask** - Python web framework
-- **Flask-CORS** - Cross-origin resource sharing
-- **OSMnx** - Street network analysis
-- **GeoPandas** - Geospatial data processing
-- **Folium** - Interactive map generation
+---
 
-### Data Sources
-- **Population Data**: Kontur Population Dataset
-- **Foot Traffic**: BestTime API
-- **Neighborhoods**: Custom GeoJSON
-- **Base Map**: CartoDB Dark Matter tiles
+## Data sources
 
-## Contributing
+| Dataset | File | Notes |
+|---|---|---|
+| Population | `data/bucharest_population_hexagons.geojson` | Bucharest extract of the [Kontur Population dataset](https://data.humdata.org/dataset/kontur-population-dataset) (2023-11-01). The full `.gpkg` is too large for git; only needed to rebuild the extract. Place it at `data/kontur_population_20231101.gpkg`. |
+| Neighborhoods | `data/neighborghoods/bucharest_neighborhoods_final.geojson` | Neighborhood boundaries |
+| Competitor stores | `data/stores_with_coords.json` | Store names, addresses and coordinates |
+| Store traffic | `data/stores_enriched.json` | Hourly busyness for each store, by day of week |
+| Foot traffic | — (live) | [BestTime API](https://besttime.app), fetched when the map is generated |
+| Streets & addresses | `cache/` (auto-created) | [OpenStreetMap](https://www.openstreetmap.org) via OSMnx, © OpenStreetMap contributors, ODbL |
+| Basemap | — | CartoDB Dark Matter tiles |
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+---
 
-## License
+## Configuration & secrets
 
-This project is open source and available for educational and research purposes.
+| Variable | Required | Used for |
+|---|---|---|
+| `BESTTIME_API_KEY` | Only for `generate_map.py` | Fetching the foot-traffic layer |
+
+Other settings live in `backend/config/config.py`: map center, Bucharest bounding box, BestTime search radius, venue types and result limit.
+
+Git ignores these files so secrets and bulky generated data stay local:
+
+- `.env` and any `.env.*` (except `.env.example`), key and credential files
+- `*.gpkg` raw datasets
+- `cache/` and `data/cache/` (OpenStreetMap responses)
+- `venv/`, `node_modules/`, `frontend/dist/`, `__pycache__/`, logs and editor files
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| Map page is blank or shows "Map data not found" | Check that `frontend_old/templates/bucharest_dual_map.html` exists, or run `python generate_map.py`. |
+| `/api/...` calls fail with a 404 or connection error in dev | Check that Flask is running on port **5001** before starting Vite. |
+| `pip install` fails on GeoPandas / Shapely / Fiona | Install the geospatial packages from conda-forge (see [Prerequisites](#prerequisites)). |
+| Foot-traffic layer is empty | `BESTTIME_API_KEY` is missing or invalid. The generator prints `API Key configured: NO` when it isn't set. |
+| Zone analysis is slow | The first request for an area downloads data from OpenStreetMap. Keep zones small; repeat requests use the cache. |
+
+---
+
+## Project status
+
+Built as a hackathon prototype. Working today:
+
+- ✅ Interactive map with population, neighborhood, foot-traffic, competition and store-traffic layers
+- ✅ Draw-a-zone street and house-number analysis
+- ✅ React landing page and map page, served by Flask
+
+Not yet built:
+
+- 🚧 The chatbot sidebar returns placeholder replies; it is not connected to an AI backend yet
+- 🚧 Income analytics (mentioned on the landing page) has no data layer yet
+
+---
 
 ## Authors
 
-- Denis Mitica - [GitHub](https://github.com/Denis172003)
-- Frontend Integration - RetailPath Team
+- **Denis Mitica** — [@Denis172003](https://github.com/Denis172003)
+- RetailPath team — frontend integration
+
+Built for the UiPath Hackathon. Map data © OpenStreetMap contributors.

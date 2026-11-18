@@ -4,10 +4,13 @@ Test script to demonstrate OSMnx street extraction functionality.
 This shows how the process_drawn_zone function works with a real polygon.
 """
 
+import os
 import sys
-sys.path.insert(0, '/Users/miticadenis/Downloads/Uipath')
 
-from bucharest_dual_map import format_ranges, process_drawn_zone
+# Make the backend package importable regardless of where the repo is cloned
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'backend'))
+
+from services.utils import format_ranges, process_drawn_zone
 
 def test_format_ranges():
     """Test the house number range formatting."""

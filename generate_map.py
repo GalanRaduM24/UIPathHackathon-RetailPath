@@ -168,8 +168,8 @@ def generate_map():
     # Add Layer Control
     folium.LayerControl(position='topleft', collapsed=False).add_to(m)
     
-    # Save to frontend/templates
-    output_file = os.path.join(BASE_DIR, 'frontend', 'templates', 'bucharest_dual_map.html')
+    # Save to frontend_old/templates (the path served by src/app.py)
+    output_file = os.path.join(BASE_DIR, 'frontend_old', 'templates', 'bucharest_dual_map.html')
     m.save(output_file)
     print(f"\n✓ Map generated successfully: {output_file}")
     print("✓ Run 'python src/app.py' to start the server")

@@ -127,7 +127,7 @@ def get_foot_traffic_data():
     }
 
     print(f"\n=== BestTime API Debug Info ===")
-    print(f"API Key (first 10 chars): {str(API_KEY_PRIVATE)[:10]}...")
+    print(f"API Key configured: {'yes' if API_KEY_PRIVATE else 'NO - set BESTTIME_API_KEY in .env'}")
     print(f"Request URL: {BASE_URL}")
     print(f"Parameters: lat={LAT}, lng={LNG}, radius={RADIUS}")
     print(f"Fetching forecast data from BestTime.app...")

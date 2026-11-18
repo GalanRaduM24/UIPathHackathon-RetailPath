@@ -1,25 +1,64 @@
-# Environment variables (API keys, secrets)
+# ==========================================================
+# Secrets & credentials — NEVER commit these
+# ==========================================================
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.json
+credentials.json
+service-account*.json
+.claude/settings.local.json
 
-# Large data files
+# ==========================================================
+# Large / external data (download separately — see README)
+# ==========================================================
 kontur_population_20231101.gpkg
 *.gpkg
+*.gpkg.gz
 
-# Python virtual environment
+# ==========================================================
+# Generated caches (OSMnx / Overpass API responses)
+# ==========================================================
+cache/
+data/cache/
+
+# ==========================================================
+# Python
+# ==========================================================
 venv/
+.venv/
 env/
-*.pyc
 __pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
 
-# OS files
+# ==========================================================
+# Node / frontend build output
+# ==========================================================
+node_modules/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================================================
+# Logs
+# ==========================================================
+*.log
+logs/
+
+# ==========================================================
+# OS / editor files
+# ==========================================================
 .DS_Store
+Thumbs.db
+desktop.ini
 *.swp
 *.swo
-
-# IDE
 .vscode/
 .idea/
-
-# Generated files (optional - uncomment if you don't want to track these)
-# bucharest_dual_map.html
-# bucharest_population_hexagons.geojson
