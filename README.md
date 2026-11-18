@@ -87,9 +87,8 @@ The web app also includes a landing page and a chatbot sidebar for strategy ques
 ### 1. Clone
 
 ```bash
-git clone https://github.com/Denis172003/Uipath.git
-cd Uipath
-git checkout real-time-analysis-fixes
+git clone https://github.com/GalanRaduM24/UIPathHackathon-RetailPath.git
+cd UIPathHackathon-RetailPath
 ```
 
 ### 2. Install backend dependencies
